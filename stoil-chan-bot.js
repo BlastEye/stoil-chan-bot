@@ -1,75 +1,56 @@
-/* Written by <xiam@menteslibres.org> */
+#!/usr/bin/env node
 
-/* Settings */
-var CONF = {
-  'server': 'irc.freenode.net',
-  'port': 6665,
-  'nickname': 'Marvin-H2G2',
-  'realname': 'Marvin-H2G2',
-  'channel': '#stoil-chan'
-};
+// Make sure the irc lib is available
+//require.paths.unshift(__dirname + '/node_modules/irc/lib');
 
-var util = require('util');
+var irc = require('irc');
 
-var net = require('net');
+var bot = new irc.Client('irc.freenode.net', 'Cobaye', {
+    port: 8001, 
+    debug: true,
+    channels: ['#stoil-chan'],
+});
 
-var client = new net.Socket();
+bot.addListener('error', function(message) {
+    console.error('ERROR: %s: %s', message.command, message.args.join(' '));
+});
 
-client.connect(
-    CONF.port || 6665, CONF.server,
-    function () {
-    /* Sending ident */
-    client.write(util.format('USER %s %s %s: %s\r\n', CONF.nickname, CONF.nickname, CONF.nickname, CONF.realname));
-    client.write(util.format('NICK %s\r\n', CONF.nickname));
+bot.addListener('message#stoil-chan', function (from, message) {
+    console.log('<%s> %s', from, message);
+});
+
+bot.addListener('message', function (from, to, message) {
+    console.log('%s => %s: %s', from, to, message);
+
+    if ( to.match(/^[#&]/) ) {
+        // channel message
+        if ( message.match(/hello/i) ) {
+            bot.say(to, 'Hello there ' + from);
+        }
+        if ( message.match(/dance/) ) {
+            setTimeout(function () { bot.say(to, "\u0001ACTION dances: _o|\u0001") }, 1000);
+            setTimeout(function () { bot.say(to, "\u0001ACTION dances: \\o|\u0001")  }, 2000);
+            setTimeout(function () { bot.say(to, "\u0001ACTION dances: |o|\u0001")  }, 3000);
+            setTimeout(function () { bot.say(to, "\u0001ACTION dances: |o/\u0001")  }, 4000);
+            setTimeout(function () { bot.say(to, "\u0001ACTION dances: |o_\u0001")  }, 4000);
+        }
+        if ( message.match(/Cobaye, flip the table/) ) {
+          bot.say(to, '(╯°□°）╯︵ ┻━┻');
+        }
     }
-    );
-
-client.on('data',
-    function(data) {
-
-    var buff = data.toString().split('\r\n');
-
-    for (var i = 0; i < buff.length; i++) {
-
-    /* Reading response line by line */
-    var line = buff[i];
-
-    console.log(line);
-
-    var prefix = null;
-    var command = null;
-    var params = null;
-
-    var match = null;
-    
-    if (match = line.match(/^:([^\s]+)\s([^\s]+)\s(.+)$/)) {
-    prefix = match[1];
-    command = match[2];
-    params = match[3];
-    } else if (match = line.match(/^([^\s]+)\s(.+)$/)) {
-      command = match[1];
-      params = match[2];
-    };
-
-    if (command == '376') {
-      client.write(util.format('JOIN %s\r\n', CONF.channel));
-    };
-    
-    if (command == '366') {
-      client.write(util.format("PRIVMSG %s :I think you ought to know I'm feeling very depressed.\r\n", CONF.channel));
+    else {
+        // private message
     }
-    
-    if (command == 'PRIVMSG') {
-      console.log(params);
-      if (params == CONF.channel + " :" + CONF.nickname + ", what's up?")
-        client.write(util.format("PRIVMSG %s :I don't know, I've never been there.\r\n", CONF.channel));
-    }
-
-    if (command == 'PING') {
-      client.write('PONG\r\n');
-    }
-
-    }
-    }
-
-);
+});
+bot.addListener('pm', function(nick, message) {
+    console.log('Got private message from %s: %s', nick, message);
+});
+bot.addListener('join', function(channel, who) {
+    console.log('%s has joined %s', who, channel);
+});
+bot.addListener('part', function(channel, who, reason) {
+    console.log('%s has left %s: %s', who, channel, reason);
+});
+bot.addListener('kick', function(channel, who, by, reason) {
+    console.log('%s was kicked from %s by %s: %s', who, channel, by, reason);
+});
