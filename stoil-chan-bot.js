@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env nodejs
 
 /* ------------------------------------- */
 /* COBAYE PROJECT : stoil-chan-bot v.0.1 */
@@ -9,38 +9,69 @@
 /* File : cobaye.js                      */
 /* ------------------------------------- */
 
-// Includes
+// TODO : Code structuration
+//        Pipotron
+//        Excuzotron (http://gilo-com.fr.chez-alice.fr/Rub_excuzo_tron.php)
+//        Bug RAH
+//        Arrival/Departure
+//        Games : Seek, Quizz
+//        Tweak time for speak
+//        Sentences occurences ponderation
+//        Request from wikipedia
+
+/* --- Includes --- */
 var irc = require('irc');
 //require('./custom_functions.js');
 
+/* --- Various declarations --- */
+var chanListHello = new Array();
+
+var smilist = new Array(
+  ":(", "D:", ":'(", ":)", ";)",
+  ":D", ":/", ":o", "Oo", ":P",
+  "lol", "XD", "^^", "-_-", "...",
+  "?", "!", "!!!", "?!", "???",
+  "???!!!"
+);
+
+var smalist = new Array(
+  'small',
+  'tiny',
+  'petit',
+  'minuscule'
+);
+
+var bigList = new Array(
+  'big',
+  'huge',
+  'gros',
+  'énorme',
+  'enorme'
+);
+
+var quotes = new Array(
+  "\u0001ACTION s'ennuie... :(\u0001",
+  "Je suis un bot à nick ! *padoum ! tsssh !*",
+  "BURP ! Pardon... j'ai fais un rot bot ! *padoum ! tsssh !*",
+  "SERAAAAAAAAAAAHHHHH !!!",
+  "CSS ROXX !",
+  "AAAHHH !!! Les zombies attaquent !!!",
+  "Bon... on fume un pétard ?",
+  "Apéro ce soir ! Et je refuse tout refus !",
+  "...",
+  "N'hesitez pas à me donner des idées hein :P"
+);
+
+var channel = '#stoil-chan';
+var botname = 'Cobaye'
+var botname_search = new RegExp(botname, 'i');
+
 // bot object instanciation
-var bot = new irc.Client('irc.freenode.net', 'Cobaye', {
+var bot = new irc.Client('irc.freenode.net', botname, {
   port: 8001, 
   debug: true,
-  channels: ['#stoil-chan'],
+  channels: [channel],
 });
-
-// Various declarations
-var chanListHello = new Array();
-var smilist = new Array(
-  ":(",
-  "D:",
-  ":'(",
-  ":)",
-  ";)",
-  ":D",
-  ":/",
-  ":o",
-  "Oo",
-  ":P",
-  "lol",
-  "XD",
-  "^^",
-  "?",
-  "!",
-  "!!!",
-  "?!"
-);
 
 // Listeners
 bot.addListener('error', function(message) {
@@ -51,67 +82,106 @@ bot.addListener('message#stoil-chan', function (from, message) {
   console.log('<%s> %s', from, message);
 });
 
+/* --- MAIN MESSAGE LISTENER --- */
+
 bot.addListener('message', function (from, to, message) {
+  
   console.log('%s => %s: %s', from, to, message);
-
+ 
   if (to.match(/^[#&]/)) {
-    // channel message
+
+    /* ---------------- */
+    /* --- COMMANDS --- */
+    /* ---------------- */  
     
-    /* --- GREATINGS --- */
-    
-    var hello = /hello/i;
-    if (message.match(/hello/i)) {
-      if (in_array(from, chanListHello)) {
-        bot.say(to, ';)');
+    if (message.match(botname_search)) { // If botname is inside message, maybe it's a command
+ 
+      /* --- PING --- */
+ 
+      if (message.match(/ping/i)) {
+        bot.say(to, 'pong ' + from);
       }
-      else {
-        bot.say(to, 'Hello there ' + from + ' :)');
-        chanListHello.push(from);
+        
+      /* --- GREATINGS --- */
+      
+      var hello = new RegExp('hello|yop|salut|hey', 'i');
+      
+      if (message.match(hello)) {
+        if (in_array(from, chanListHello)) {
+          bot.say(to, ';)');
+        }
+        else {
+          bot.say(to, 'Yop ' + from + ' :)');
+          chanListHello.push(from);
+        }
       }
+
+      /* --- FLIP THE TABLE  --- */
+
+      if (message.match(/flip the table/) || message.match(/^(ra+h+)/i)) {
+        var ftt = '';
+        switch (from) {
+          case 'BlastEye':
+            ftt = '(ノಠ益ಠ)ノ彡┻━┻'; 
+            break;
+          default:
+            ftt = '(╯°□°）╯︵ ┻━┻'; 
+        }
+        bot.say(to, ftt);
+      }
+       
+      /* --- SAY SOMETHING  --- */
+
+      if (message.match(/say something/i)) {
+        var randQuote = randme(quotes.length);
+        bot.say(to, quotes[randQuote]);
+      }
+
+      /* --- ? 42  --- */
+
+      if (message.match(/\?/)) { 
+        bot.say(to, '42');
+      }
+
     }
     
-    /* ------ */
-
-    /* --- DANCE --- */
+    /* --------------------- */
+    /* --- INTERVENTIONS --- */
+    /* --------------------- */  
     
-    if (message.match(/dance/)) {
-      setTimeout(function () { bot.say(to, "\u0001ACTION dances: _o|\u0001") }, 1000);
-      setTimeout(function () { bot.say(to, "\u0001ACTION dances: \\o|\u0001")  }, 2000);
-      setTimeout(function () { bot.say(to, "\u0001ACTION dances: |o|\u0001")  }, 3000);
-      setTimeout(function () { bot.say(to, "\u0001ACTION dances: |o/\u0001")  }, 4000);
-      setTimeout(function () { bot.say(to, "\u0001ACTION dances: |o_\u0001")  }, 4000);
+    /* --- QUOTES  --- */
+
+    if (randnb <= 10) {
+      var randTime = randme(180000);
+      var randQuote = randme(quotes.length);
+      
+      setTimeout(function () { bot.say(to, quotes[randQuote]) }, randTime);
     }
 
-    /* ------ */
+    /* --- STOI *  --- */
 
-    /* --- FLIP THE TABLE  --- */
-
-    if (message.match(/Cobaye, flip the table/) || message.match(/^(ra+h+)/i)) {
-      var ftt = '';
-      switch (from) {
-        case 'BlastEye':
-          ftt = '(ノಠ益ಠ)ノ彡┻━┻'; 
-          break;
-        default:
-          ftt = '(╯°□°）╯︵ ┻━┻'; 
-      }
-      bot.say(to, ftt);
-    }
-    
-    /* ------ */
-
-    var randnb = Math.floor(Math.random() * 101);
+    var randnb = randme(100);
     console.log('randnb = ' + randnb);
+    
+    if (randnb >= 95) {
+      var theMessage = message.split(' ');
+      var poped = '';
+      while (in_array(poped = theMessage.pop(), smilist)) {}
+      if (poped) {
+        if (poped.match(/^([a-zA-Z0-9_-]+)$/))
+          bot.say(to, 'stoi ' + poped);
+      }
+    }
 
-    if (randnb >= 85) {
+    if (message.match(botname_search) && message.match(/stoi/)) { 
       var theMessage = message.split(' ');
       var poped = '';
       while (in_array(poped = theMessage.pop(), smilist)) {}
       if (poped.match(/^([a-zA-Z0-9_-]+)$/))
-        bot.say(to, 'stoi ' + poped);
+        bot.say(to, 'Non ' + from + ', stoi ' + poped + ' :P');
     }
-
   }
+
   if (message.match(/!!!/i)) {
     //bot.send('KICK');
   }
@@ -128,8 +198,8 @@ bot.addListener('pm', function(nick, message) {
 
 bot.addListener('join', function(channel, who) {
   console.log('%s has joined %s', who, channel);
-  if (who !== 'Cobaye') {
-    bot.say('#stoil-chan', 'Hello there ' + who + ' :)');
+  if (who !== botname) {
+    bot.say('#stoil-chan', 'Yop ' + who + ' :)');
     chanListHello.push(who);
   }
 });
@@ -138,14 +208,15 @@ bot.addListener('join', function(channel, who) {
 
 bot.addListener('part', function(channel, who, reason) {
   console.log('%s has left %s: %s', who, channel, reason);
-  // TODO : Greatings management on PART event
 });
 
 bot.addListener('kick', function(channel, who, by, reason) {
   console.log('%s was kicked from %s by %s: %s', who, channel, by, reason);
 });
 
+/* ------------------------ */ 
 /* --- CUSTOM FUNCTIONS --- */
+/* ------------------------ */ 
 
 /* --- Find a needle in a haystack... classic :P  ;) --- */
 
@@ -158,7 +229,9 @@ function in_array(needle, haystack) {
   return false;
 }
 
-function rand_time() {
-  
+/* --- Generate an random number --- */
+
+function randme(nb) {
+  return Math.floor(Math.random() * (nb + 1));
 }
 
