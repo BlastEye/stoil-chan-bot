@@ -149,6 +149,9 @@ bot.addListener('message', function (from, to, message) {
     /* --- INTERVENTIONS --- */
     /* --------------------- */  
     
+    var randnb = randme(100);
+    console.log('randnb = ' + randnb);
+
     /* --- QUOTES  --- */
 
     if (randnb <= 10) {
@@ -159,10 +162,7 @@ bot.addListener('message', function (from, to, message) {
     }
 
     /* --- STOI *  --- */
-
-    var randnb = randme(100);
-    console.log('randnb = ' + randnb);
-    
+ 
     if (randnb >= 95) {
       var theMessage = message.split(' ');
       var poped = '';
